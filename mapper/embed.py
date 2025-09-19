@@ -6,7 +6,8 @@ from openai import OpenAI
 from tqdm import tqdm
 import sys
 from dotenv import load_dotenv
-from .sources.csp import CspApiSource
+from mapper.sources.csp import CspApiSource
+from mapper.sources.texas_csp import TexasCspApiSource
 
 
 def main(source, output):
@@ -29,7 +30,18 @@ def get_embeddings(source_desc, output):
         logging.info("Generating embeddings")
         for row in tqdm(source, total=len(source) if "__len__" in source else None):
             embedding = get_embedding(openai, row.description)
-            writer.writerow([row.id, row.code, row.description, embedding])
+            if embedding:
+                writer.writerow([row.id, row.code, row.description, embedding])
+            else:
+                logging.warning(
+                    f"no embedding created for {row.id} {row.code} {row.description}"
+                )
+
+
+sources = {
+    "csp-api": CspApiSource,
+    "texas-csp-api": TexasCspApiSource,
+}
 
 
 def get_source(source_desc):
@@ -39,10 +51,10 @@ def get_source(source_desc):
             raise RuntimeError("source must have 'type'")
 
         source_type = parsed.get("type")
-        if source_type == "csp-api":
-            return CspApiSource(parsed.get("jurisdiction"), parsed.get("subject"))
-        else:
+        source = sources[source_type]
+        if not source:
             raise RuntimeError(f"unknown source: {source_type}")
+        return source(parsed)
 
     except json.decoder.JSONDecodeError:
         raise RuntimeError("source must be JSON")
@@ -51,6 +63,8 @@ def get_source(source_desc):
 def get_embedding(openai, text):
     model = "text-embedding-3-small"
     text = text.replace("\n", " ")
+    if text == "":
+        return None
     response = openai.embeddings.create(input=[text], model=model)
     return response.data[0].embedding
 
