@@ -113,7 +113,10 @@ if __name__ == "__main__":
         action="append",
     )
     parser.add_argument(
-        "-o", "--output-directory", help="The directory to write the output files to."
+        "-o",
+        "--output-directory",
+        help="The directory to write the output files to.",
+        default="mappings",
     )
     args = parser.parse_args()
 

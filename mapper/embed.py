@@ -7,7 +7,8 @@ from tqdm import tqdm
 import sys
 from dotenv import load_dotenv
 from mapper.sources.csp import CspApiSource
-from mapper.sources.texas_csp import TexasCspApiSource
+from mapper.sources.tx_csp import TxCspApiSource
+from mapper.sources.va_csp import VaCspApiSource
 
 
 def main(source, output):
@@ -40,7 +41,8 @@ def get_embeddings(source_desc, output):
 
 sources = {
     "csp-api": CspApiSource,
-    "texas-csp-api": TexasCspApiSource,
+    "tx-csp-api": TxCspApiSource,
+    "va-csp-api": VaCspApiSource,
 }
 
 
